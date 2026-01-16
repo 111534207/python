@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}登入 - CineTrack{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">🔐 登入</h2>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }} 
+                            {% if field.errors %}
+                                <div class="text-danger small">{{ field.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">{{ form.non_field_errors.0 }}</div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-primary w-100 py-2">登入</button>
+                    </form>
+                    
+                    <div class="text-center mt-3">
+                        <p class="text-muted">還沒有帳號嗎？ <a href="{% url 'register' %}">立即註冊</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var inputs = document.querySelectorAll('input');
+    inputs.forEach(function(input){
+        input.classList.add('form-control');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="text-center mb-5">
+    <h1 class="display-4 mb-3">🔍 搜尋電影</h1>
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <form action="{% url 'search_movies' %}" method="get" class="d-flex gap-2 flex-wrap">
+    
+                <select name="genre" class="form-select w-auto" onchange="this.form.submit()">
+                    <option value="">✨ 所有類型</option>
+                    {% for g in genres %}
+                        <option value="{{ g.id }}" {% if selected_genre == g.id %}selected{% endif %}>
+                            {{ g.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <select name="year" class="form-select w-auto">
+                    <option value="">📅 所有年份</option>
+                    {% for y in year_range %}
+                        <option value="{{ y }}" {% if selected_year == y %}selected{% endif %}>
+                            {{ y }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <select name="month" class="form-select w-auto">
+                    <option value="">🗓️ 所有月份</option>
+                    {% for m in month_range %}
+                        <option value="{{ m }}" {% if selected_month == m %}selected{% endif %}>
+                            {{ m }} 月
+                        </option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="query" class="form-control flex-grow-1" style="min-width: 150px;" placeholder="輸入電影名稱..." value="{{ query|default:'' }}">
+                
+                <button class="btn btn-primary text-nowrap" type="submit">🔍 搜尋</button>
+
+                {% if query or selected_genre or selected_year or selected_month %}
+                    <a href="{% url 'search_movies' %}" class="btn btn-outline-secondary">❌</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+
+<h3 class="mb-4 border-start border-4 border-warning ps-3">
+    {{ search_title }}
+</h3>
+
+<div class="row row-cols-1 row-cols-md-3 row-cols-lg-5 g-4">
+    {% for item in results %}
+    <div class="col">
+        <div class="card h-100 shadow-sm border-0 hover-card">
+            <div class="position-relative" style="padding-top: 150%; background-color: #f8f9fa; overflow: hidden;">
+                <a href="{% url 'movie_detail' item.id %}" class="text-decoration-none">
+                    {% if item.poster_path %}
+                        <img src="https://image.tmdb.org/t/p/w500{{ item.poster_path }}" 
+                            class="position-absolute top-0 start-0 w-100 h-100" 
+                            style="object-fit: cover;" 
+                            alt="{{ item.title }}">
+                        {% if item.vote_average %}
+                            <div class="position-absolute top-0 end-0 p-2">
+                                <span class="badge bg-warning text-dark shadow d-flex align-items-center gap-1">
+                                    ⭐ {{ item.vote_average|floatformat:1 }}
+                                </span>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center text-muted">
+                            <i class="bi bi-film display-4 mb-2"></i>
+                            <span>暫無海報</span>
+                        </div>
+                    {% endif %}
+                </a>
+            </div>
+
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title text-truncate" title="{{ item.title }}">{{ item.title }}</h5>
+                <p class="card-text small text-muted mb-2">
+                    {% if item.release_date %}
+                        📅 {{ item.release_date }}
+                    {% else %}
+                        📅 未知日期
+                    {% endif %}
+                </p>
+                
+                <div class="mb-3">
+                    {% if item.media_type == 'tv' %}
+                        <span class="badge bg-success">📺 影集</span>
+                    {% else %}
+                        <span class="badge bg-primary">🎬 電影</span>
+                    {% endif %}
+                </div>
+
+                <form action="{% url 'add_movie' item.id %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="tmdb_id" value="{{ item.id }}">
+                    <input type="hidden" name="title" value="{{ item.title }}">
+                    <input type="hidden" name="release_date" value="{{ item.release_date }}">
+                    <input type="hidden" name="poster_path" value="{{ item.poster_path }}">
+                    <input type="hidden" name="media_type" value="{{ item.media_type }}">
+                    
+                    <button type="submit" class="btn btn-outline-primary w-100 btn-sm">
+                        ➕ 加入片單
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <div class="col-12 text-center py-5">
+            <p class="text-muted fs-4">找不到相關電影，換個關鍵字試試？ 🤔</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

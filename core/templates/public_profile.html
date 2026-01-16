@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <div class="text-center mb-5">
+        <h1>👤 {{ profile_user.username }} 的觀影清單</h1>
+        <p class="text-muted">CineTrack 會員</p>
+    </div>
+
+    <div class="row g-3 mb-5 justify-content-center">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-primary text-white text-center py-3">
+                <h6 class="opacity-75">🎬 總收藏</h6>
+                <h2 class="fw-bold m-0">{{ total_movies }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-success text-white text-center py-3">
+                <h6 class="opacity-75">✅ 已完食</h6>
+                <h2 class="fw-bold m-0">{{ watched_count }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-warning text-dark text-center py-3">
+                <h6 class="opacity-75">⭐ 平均給分</h6>
+                <h2 class="fw-bold m-0">{{ avg_rating }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for item in public_list %}
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="position-relative">
+                    {% if item.movie.poster_path %}
+                        <img src="{{ item.movie.poster_path }}" class="img-fluid rounded-start h-100" style="object-fit: cover;">
+
+                    {% else %}
+                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light text-muted" 
+                            style="height: 360px;">
+                            <div class="text-center">
+                                <span class="fs-1">🎬</span>
+                                <p class="m-0 small">暫無海報</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if item.rating > 0 %}
+                    <span class="position-absolute top-0 end-0 badge bg-warning text-dark m-2 shadow">
+                        ⭐ {{ item.rating }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.movie.title }}</h5>
+                    
+                    <div class="mb-2">
+                        {% if item.status == 'plan' %}
+                            <span class="badge bg-secondary">📅 想看</span>
+                        {% elif item.status == 'watching' %}
+                            <span class="badge bg-primary">👀 觀看中</span>
+                        {% elif item.status == 'watched' %}
+                            <span class="badge bg-success">✅ 已看完</span>
+                        {% elif item.status == 'dropped' %}
+                            <span class="badge bg-danger">🚫 棄劇</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if item.review %}
+                        <p class="card-text small text-muted fst-italic">"{{ item.review|truncatechars:30 }}"</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-5">
+            <h4 class="text-muted">這位使用者還沒有收藏任何電影。</h4>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+{% endblock %}

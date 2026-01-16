@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}觀影分析 - CineTrack{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="border-start border-4 border-warning ps-2">📊 觀影偏好分析</h3>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">⬅️ 返回片單</a>
+    </div>
+
+    {% if no_data %}
+        <div class="alert alert-info text-center py-5">
+            <h4>還沒有足夠的資料進行分析 😅</h4>
+            <p>請先去搜尋並加入一些電影到你的片單中！</p>
+            <a href="{% url 'search_movies' %}" class="btn btn-primary mt-3">去搜尋電影</a>
+        </div>
+    {% else %}
+
+    <div class="row g-3 mb-5">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white shadow-sm border-0 h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h6 class="opacity-75">本次分析樣本數</h6>
+                    <h1 class="fw-bold">{{ analyzed_count }} <span class="fs-5">部</span></h1>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-success text-white shadow-sm border-0 h-100">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <h6 class="opacity-75">你最愛的類型</h6>
+                    <h1 class="fw-bold">{{ top_genre }}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-white fw-bold border-bottom-0">
+                    🍰 電影類型分佈
+                </div>
+                <div class="card-body">
+                    <canvas id="genreChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-header bg-gradient bg-warning text-dark fw-bold border-bottom-0">
+                    🤖 根據你的喜好推薦 ({{ top_genre }})
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for movie in recommendations %}
+                        <li class="list-group-item d-flex align-items-center p-3">
+                            {% if movie.poster_path %}
+                            <img src="https://image.tmdb.org/t/p/w92{{ movie.poster_path }}" 
+                                 class="rounded me-3" width="50" alt="{{ movie.title }}">
+                            {% else %}
+                            <div class="rounded me-3 bg-secondary d-flex align-items-center justify-content-center text-white" style="width:50px; height:75px; font-size:10px;">No IMG</div>
+                            {% endif %}
+                            
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 fw-bold">{{ movie.title }}</h6>
+                                <small class="text-muted">⭐ {{ movie.vote_average }} | {{ movie.release_date|slice:":4" }}</small>
+                            </div>
+                            
+                            <a href="{% url 'add_movie' movie.id %}" class="btn btn-sm btn-outline-primary">＋ 加入</a>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-center py-4 text-muted">
+                            暫時沒有推薦結果，請多加入一些電影！
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        const ctx = document.getElementById('genreChart').getContext('2d');
+        
+        // 👇 修正重點：直接使用 views.py 傳來的 JSON 字串，並加上 |safe
+        // 因為 views.py 已經做過 json.dumps 了，這裡直接當成 JS 物件使用即可
+        const labels = {{ labels|safe }};
+        const data = {{ data|safe }};
+
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // 讓圖表適應容器大小
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+</div>
+{% endblock %}

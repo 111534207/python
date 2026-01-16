@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}編輯 - {{ movie.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">✏️ 編輯電影狀態</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if movie.poster_path %}
+                            <img src="https://image.tmdb.org/t/p/w200{{ movie.poster_path }}" class="rounded shadow-sm mb-3">
+                        {% endif %}
+                        <h3>{{ movie.title }}</h3>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">觀影狀態</label>
+                            <select name="status" class="form-select">
+                                <option value="plan" {% if movie.status == 'plan' %}selected{% endif %}>想看</option>
+                                <option value="watching" {% if movie.status == 'watching' %}selected{% endif %}>觀看中</option>
+                                <option value="watched" {% if movie.status == 'watched' %}selected{% endif %}>已看完</option>
+                                <option value="dropped" {% if movie.status == 'dropped' %}selected{% endif %}>棄劇</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">評分</label>
+                            <div class="input-group">
+                                <span class="input-group-text">⭐</span>
+                                <input type="number" step="0.1" min="0" max="10" name="rating" 
+                                       class="form-control" value="{{ movie.rating|default:'' }}" placeholder="尚未評分">
+                            </div>
+                            <div class="form-text">請輸入 0 到 10 之間的數字</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="reviewInput" class="form-label fw-bold">觀影心得</label>
+                            
+                            <button type="button" class="btn btn-sm btn-outline-warning mb-2 ms-2" onclick="callAI()">
+                                ✨ AI 幫我寫
+                            </button>
+                            
+                            <textarea name="review" id="reviewInput" class="form-control" rows="4" placeholder="寫下你的想法...">{{ movie.review|default:'' }}</textarea>
+                            
+                            <input type="hidden" id="movieTitleForAI" value="{{ movie.title }}">
+                        </div>
+
+                        <script>
+                            function getCookie(name) {
+                                let cookieValue = null;
+                                if (document.cookie && document.cookie !== '') {
+                                    const cookies = document.cookie.split(';');
+                                    for (let i = 0; i < cookies.length; i++) {
+                                        const cookie = cookies[i].trim();
+                                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                            break;
+                                        }
+                                    }
+                                }
+                                return cookieValue;
+                            }
+
+                            async function callAI() {
+                                const btn = document.querySelector('button[onclick="callAI()"]');
+                                const textarea = document.getElementById('reviewInput');
+                                const title = document.getElementById('movieTitleForAI').value;
+                                const ratingInput = document.querySelector('input[name="rating"]'); 
+                                const rating = ratingInput ? ratingInput.value : 8;
+                                const csrftoken = getCookie('csrftoken'); // 獲取 CSRF Token
+
+                                btn.innerHTML = '🤖 正在思考中...';
+                                btn.disabled = true;
+
+                                try {
+                                    const response = await fetch('/api/generate-review/', { // 確保你的 urls.py 有這個路徑
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': csrftoken // 加入 Token 避免 403 錯誤
+                                        },
+                                        body: JSON.stringify({
+                                            title: title,
+                                            rating: rating
+                                        })
+                                    });
+
+                                    const data = await response.json();
+
+                                    if (data.status === 'success') {
+                                        textarea.value = data.review;
+                                    } else {
+                                        alert('AI 發生錯誤：' + (data.message || '未知錯誤'));
+                                    }
+                                } catch (error) {
+                                    console.error(error);
+                                    alert('連線失敗，請檢查網路或後端設定');
+                                } finally {
+                                    btn.innerHTML = '✨ AI 幫我寫';
+                                    btn.disabled = false;
+                                }
+                            }
+                        </script>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary me-md-2">取消</a>
+                            <button type="submit" class="btn btn-primary px-4">儲存變更</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

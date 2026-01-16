@@ -1,0 +1,10 @@
+venv\Scripts\activate  (venv)
+python manage.py runserver 執行
+ctrl + c 停止伺服器
+
+
+帳號:weiting
+密碼:123456
+
+帳號:user
+密碼:a1a2a3a4a5a6

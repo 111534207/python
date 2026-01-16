@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}註冊 - CineTrack{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">📝 註冊帳號</h2>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                        <div class="mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                                <div class="form-text text-muted small">{{ field.help_text }}</div>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        {% endfor %}
+                        
+                        <button type="submit" class="btn btn-success w-100 py-2">註冊並登入</button>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <p class="text-muted">已經有帳號了？ <a href="{% url 'login' %}">直接登入</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var inputs = document.querySelectorAll('input');
+    inputs.forEach(function(input){
+        input.classList.add('form-control');
+    });
+</script>
+{% endblock %}

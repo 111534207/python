@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ movie.title }} - CineTrack{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="mb-3">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">⬅️ 返回上一頁</a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow border-0">
+                {% if movie.poster_path %}
+                <img src="https://image.tmdb.org/t/p/w500{{ movie.poster_path }}" 
+                     class="card-img-top" alt="{{ movie.title }}">
+                {% else %}
+                <div class="bg-secondary text-white d-flex justify-content-center align-items-center" style="height: 500px;">
+                    暫無海報
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="d-grid gap-2 mt-3">
+                <a href="{% url 'add_movie' movie.id %}" class="btn btn-primary btn-lg shadow-sm">
+                    ＋ 加入待看清單
+                </a>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <h1 class="fw-bold display-5">{{ movie.title }}</h1>
+            <p class="text-muted fs-5">
+                {{ movie.release_date }} | {{ movie.runtime }} 分鐘
+            </p>
+
+            <div class="mb-4">
+                {% for genre in movie.genres %}
+                    <span class="badge bg-secondary me-1">{{ genre.name }}</span>
+                {% endfor %}
+                <span class="badge bg-warning text-dark ms-2">
+                    ⭐ {{ movie.vote_average|floatformat:1 }}
+                </span>
+            </div>
+
+            <div class="mb-4">
+                <h4 class="border-start border-4 border-warning ps-2">📖 劇情簡介</h4>
+                <p class="lead fs-6">{{ movie.overview|default:"暫無劇情簡介" }}</p>
+            </div>
+
+            {% if trailer %}
+            <div class="mb-4">
+                <h4 class="border-start border-4 border-danger ps-2">🎬 預告片</h4>
+                <div class="ratio ratio-16x9 shadow rounded overflow-hidden">
+                    <iframe src="https://www.youtube.com/embed/{{ trailer.key }}" 
+                            title="{{ trailer.name }}" 
+                            allowfullscreen></iframe>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if providers.flatrate or providers.rent or providers.buy %}
+            <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold mb-3">🇹🇼 台灣哪裡看？</h5>
+
+                    {% if providers.flatrate %}
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold text-uppercase">線上串流 (訂閱)</small>
+                        <div class="d-flex flex-wrap gap-2 mt-1">
+                            {% for p in providers.flatrate %}
+                            <img src="https://image.tmdb.org/t/p/original{{ p.logo_path }}" 
+                                 class="rounded shadow-sm" 
+                                 title="{{ p.provider_name }}" 
+                                 width="50" height="50" 
+                                 data-bs-toggle="tooltip" data-bs-placement="top">
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if providers.rent %}
+                    <div class="mb-3">
+                        <small class="text-muted fw-bold text-uppercase">單片租借</small>
+                        <div class="d-flex flex-wrap gap-2 mt-1">
+                            {% for p in providers.rent %}
+                            <img src="https://image.tmdb.org/t/p/original{{ p.logo_path }}" 
+                                 class="rounded shadow-sm" 
+                                 title="{{ p.provider_name }}" 
+                                 width="40" height="40">
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+            {% endif %}
+            
+        </div>
+    </div>
+</div>
+{% endblock %}

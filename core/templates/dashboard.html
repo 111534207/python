@@ -1,0 +1,138 @@
+{% extends 'base.html' %} 
+{% block title %}我的片單 - CineTrack{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="border-start border-4 border-primary ps-2">📋 我的追蹤清單</h3>
+        <a href="{% url 'search_movies' %}" class="btn btn-primary">＋ 新增電影</a>
+        <a href="{% url 'movie_analysis' %}" class="btn btn-warning text-dark shadow-sm"> 📊 觀影分析</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-primary text-white h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="mb-0 opacity-75">🎬 總收藏</h6>
+                        <h2 class="fw-bold mb-0">{{ total_movies }}</h2>
+                    </div>
+                    <div class="fs-1 opacity-50">📥</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-success text-white h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="mb-0 opacity-75">✅ 已完食</h6>
+                        <h2 class="fw-bold mb-0">{{ watched_count }}</h2>
+                    </div>
+                    <div class="fs-1 opacity-50">🏆</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm bg-warning text-dark h-100">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="mb-0 opacity-75">⭐ 平均給分</h6>
+                        <h2 class="fw-bold mb-0">{{ avg_rating }}</h2>
+                    </div>
+                    <div class="fs-1 opacity-50">📊</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4 border-0 bg-light">
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-center">
+                <div class="col-auto"><span class="fw-bold text-muted small me-2">篩選:</span></div>
+                <div class="col-auto">
+                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="all" {% if current_status == 'all' %}selected{% endif %}>全部顯示</option>
+                        <option value="plan" {% if current_status == 'plan' %}selected{% endif %}>想看</option>
+                        <option value="watching" {% if current_status == 'watching' %}selected{% endif %}>觀看中</option>
+                        <option value="watched" {% if current_status == 'watched' %}selected{% endif %}>已看完</option>
+                        <option value="dropped" {% if current_status == 'dropped' %}selected{% endif %}>棄劇</option>
+                    </select>
+                </div>
+                <div class="col-auto border-start mx-2"></div>
+                <div class="col-auto"><span class="fw-bold text-muted small me-2">排序:</span></div>
+                <div class="col-auto">
+                    <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="newest" {% if current_sort == 'newest' %}selected{% endif %}>最新加入</option>
+                        <option value="oldest" {% if current_sort == 'oldest' %}selected{% endif %}>最早加入</option>
+                        <option value="rating_desc" {% if current_sort == 'rating_desc' %}selected{% endif %}>評分 (高 ⮕ 低)</option>
+                        <option value="rating_asc" {% if current_sort == 'rating_asc' %}selected{% endif %}>評分 (低 ⮕ 高)</option>
+                    </select>
+                </div>
+                {% if current_status != 'all' or current_sort != 'newest' %}
+                <div class="col-auto ms-auto">
+                    <a href="{% url 'dashboard' %}" class="text-decoration-none text-muted small">❌ 清除條件</a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+
+    {% if user_movies %}
+    <div class="row">
+        {% for item in user_movies %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 movie-card">
+                <div class="row g-0 h-100">
+                    <div class="col-4">
+                        {% if item.poster_path %}
+                            <img src="https://image.tmdb.org/t/p/w500{{ item.poster_path }}" 
+                                 alt="{{ item.title }}" 
+                                 class="img-fluid rounded-start h-100 object-fit-cover"
+                                 style="min-height: 200px;">
+                        {% else %}
+                            <div class="bg-secondary text-white d-flex align-items-center justify-content-center h-100">
+                                無海報
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="col-8">
+                        <div class="card-body d-flex flex-column h-100">
+                            <h5 class="card-title text-truncate">{{ item.title }}</h5>
+                            <p class="card-text text-muted small">
+                                {{ item.added_at|date:"Y/m/d" }}
+                            </p>
+                            
+                            <div class="mb-2">
+                                <span class="badge {% if item.status == 'watched' %}bg-success{% elif item.status == 'watching' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ item.get_status_display }}
+                                </span>
+                                {% if item.rating %}
+                                    <span class="badge bg-warning text-dark">⭐ {{ item.rating }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="mt-auto d-flex gap-2">
+                                <a href="{% url 'edit_movie' item.id %}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                    ✏️ 編輯
+                                </a>
+                                <form method="post" action="{% url 'remove_movie' item.id %}" onsubmit="return confirm('⚠️ 確定要從清單中移除這部電影嗎？');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">🗑️</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+        <div class="text-center py-5">
+            <h4 class="text-muted">沒有符合條件的電影 😅</h4>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary mt-3">清除所有篩選</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
