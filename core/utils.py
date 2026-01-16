@@ -1,7 +1,7 @@
 import requests
 
 # 建議將來這行要放在環境變數，現在練習先直接填
-TMDB_API_KEY = 'd9421c1104e8d7b3958ef76e67c0cdf7'
+TMDB_API_KEY = '$$$'
 
 def search_movie_from_api(query):
     url = "https://api.themoviedb.org/3/search/movie"

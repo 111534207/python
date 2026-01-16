@@ -111,7 +111,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 👇 API 金鑰 (保留這一行)
-TMDB_API_KEY = "d9421c1104e8d7b3958ef76e67c0cdf7"
+TMDB_API_KEY = "$$$"
 
 # 👇 登入/登出設定 (只要保留這一組就好，把其他的刪掉)
 LOGIN_URL = 'login'

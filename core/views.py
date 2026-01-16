@@ -464,7 +464,7 @@ def movie_analysis(request):
 # ⚠️ 請去 https://aistudio.google.com/app/apikey 申請一個免費 Key
 # API_KEY = "AIzaSyAxUIcSKg3F_afqjMUa7Fl5OXueAswWg_E"
 # 👇 請填入你的 Google API Key (去 https://aistudio.google.com/app/apikey 申請)
-GENAI_API_KEY = "AIzaSyDxr4oJmn9U3TZlWBEltO3lw01WuAIlSIo"
+GENAI_API_KEY = "$$$"
 
 @csrf_exempt
 @login_required
